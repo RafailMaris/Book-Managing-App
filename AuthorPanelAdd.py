@@ -1,6 +1,4 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QHBoxLayout
+from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QHBoxLayout
 
 import DB
 from PanelView import PanelView

@@ -1,16 +1,15 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget,
-    QStackedWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QTextEdit, QLineEdit, QSizePolicy,
-    QFormLayout, QSpacerItem, QFrame
+    QWidget,
+    QLabel, QTextEdit, QLineEdit
 )
 class Panel(QWidget):
     LABEL_FONT = QFont('Google Sans', 18)
     TEXT_FONT = QFont('Google Sans', 16)
     INFO_FONT = QFont('Google Sans', 12)
     WIDTH = 400
+    SMALL_WIDTH = 150
     SPACING = 20
     ERROR_STYLE = "color: red; font-size: 12px;"
     def __init__(self):
@@ -42,7 +41,11 @@ class Panel(QWidget):
         text_field.setFixedWidth(width)
         layout.addWidget(text_field,alignment=Qt.AlignmentFlag.AlignCenter)
         return text_field
-
+    def setLineEditPage(self,layout) -> QLineEdit:
+        text_field = QLineEdit()
+        text_field.setFont(self.TEXT_FONT)
+        layout.addWidget(text_field, alignment=Qt.AlignmentFlag.AlignCenter)
+        return text_field
     def setError(self,layout) -> QLabel:
         error = QLabel()
         error.setStyleSheet(self.ERROR_STYLE)
@@ -66,6 +69,13 @@ class Panel(QWidget):
                 p.author_error.setText(message)
             elif errorType == "notes":
                 p.notes_error.setText(message)
+        elif panelType == "books":
+            if errorType == "title":
+                p.bookTitleError.setText(message)
+            elif errorType == "author":
+                p.bookAuthorError.setText(message)
+            elif errorType == "notes":
+                p.bookNotesError.setText(message)
 
     def clearErrors(self, panelType: str, p):
         if panelType == "quote":
@@ -77,8 +87,10 @@ class Panel(QWidget):
         elif panelType == "author":
             p.author_error.setText("")
             p.notes_error.setText("")
-        elif panelType == "book":
-            print('a')
+        elif panelType == "books":
+            p.bookTitleError.setText("")
+            p.bookAuthorError.setText("")
+            p.bookNotesError.setText("")
 
 
 

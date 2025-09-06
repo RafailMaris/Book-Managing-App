@@ -16,7 +16,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     db = DB()
     window = MainWindow.MainWindow(db)
-    window.resize(1000, 600)  # Increased height for better layout
+    window.resize(1000, 700)  # Increased height for better layout
     window.show()
 
     sys.exit(app.exec())

@@ -10,12 +10,20 @@ from PyQt6.QtWidgets import (
 
 import AuthorPanelAdd
 import PanelView
-import BookPanel
+import BookPanelAdd
 import Panel
-import QuotePanel
+import QuotePanelAdd
 import DB
 import AuthorPanelEdit
 
+#STACK INDEXES
+# 0 - authorPanelEdit
+# 1 - bookPanelEdit
+# 2 - quotePanelEdit
+# 3 - Panel
+# 4 - book panel
+# 5 - quote panel
+# 6 - author panel
 
 class MainWindow(QMainWindow):
     stack = None
@@ -43,12 +51,12 @@ class MainWindow(QMainWindow):
 
         self.stack = QStackedWidget()
         self.view = PanelView.PanelView(self.stack,db)
-        self.stack.addWidget(Panel.Panel()) # 1
-        self.stack.addWidget(BookPanel.BookPanel(self.stack,db))  # 2
-        self.stack.addWidget(QuotePanel.QuotePanel(self.stack,db))  # 3
-        self.stack.addWidget(AuthorPanelAdd.AuthorPanelAdd(self.stack,db,self.view)) # 4
-        self.stack.addWidget(self.view) # 5
-        self.stack.setCurrentIndex(1)
+        self.stack.addWidget(Panel.Panel())
+        self.stack.addWidget(BookPanelAdd.BookPanelAdd(self.stack,db,self.view))
+        self.stack.addWidget(QuotePanelAdd.QuotePanelAdd(self.stack,db,self.view))
+        self.stack.addWidget(AuthorPanelAdd.AuthorPanelAdd(self.stack,db,self.view))
+        self.stack.addWidget(self.view)
+        self.stack.setCurrentIndex(3)
         # Main layout
         main_layout = QVBoxLayout()
         main_layout.addLayout(button_layout)
@@ -61,30 +69,44 @@ class MainWindow(QMainWindow):
         self.book_button.clicked.connect(self.show_book_panel)
         self.quote_button.clicked.connect(self.show_quote_panel)
         self.author_button.clicked.connect(self.show_author_panel)
+        self.stack.currentChanged.connect(self.setButtons)
+    def resetButtons(self):
+        self.book_button.setStyleSheet("")
+        self.quote_button.setStyleSheet("")
+        self.author_button.setStyleSheet("")
+
+    def setButtons(self, index: int):
+        if not index == 7:
+            self.resetButtons()
+        if index == 0:
+            self.author_button.setStyleSheet("QPushButton { background-color: #ED650A; }")
+        elif index == 1:
+            self.book_button.setStyleSheet("QPushButton { background-color: #ED650A; }")
+        elif index == 2:
+            self.quote_button.setStyleSheet("QPushButton { background-color: #ED650A; }")
+        elif index == 3:
+            #panel
+            print()
+        elif index == 4:
+            self.book_button.setStyleSheet("QPushButton { background-color: #0C8728; }")
+        elif index == 5:
+            self.quote_button.setStyleSheet("QPushButton { background-color: #0C8728; }")
+        elif index == 6:
+            self.author_button.setStyleSheet("QPushButton { background-color: #0C8728; }")
 
     def show_book_panel(self):
         """Switch to the book management panel"""
-        self.stack.setCurrentIndex(2)
-        self.book_button.setStyleSheet("QPushButton { background-color: #0C8728; }")
-        self.quote_button.setStyleSheet("")
-        self.author_button.setStyleSheet("")
+        self.stack.setCurrentIndex(4)
 
     def show_quote_panel(self):
         """Switch to the quote management panel"""
-        self.stack.setCurrentIndex(3)
-        self.quote_button.setStyleSheet("QPushButton { background-color: #0C8728; }")
-        self.book_button.setStyleSheet("")
-        self.author_button.setStyleSheet("")
+        self.stack.setCurrentIndex(5)
+
 
     def show_author_panel(self):
         """Switch to the author management panel"""
-        self.stack.setCurrentIndex(4)
-        self.author_button.setStyleSheet("QPushButton { background-color: #0C8728; }")
-        self.book_button.setStyleSheet("")
-        self.quote_button.setStyleSheet("")
+        self.stack.setCurrentIndex(6)
+
 
     def back_to_menu(self):
-        self.stack.setCurrentIndex(1)
-        self.book_button.setStyleSheet("")
-        self.quote_button.setStyleSheet("")
-        self.author_button.setStyleSheet("")
+        self.stack.setCurrentIndex(3)

@@ -69,9 +69,26 @@ def checkDataAuthor(a)->bool:
     elif len(a.author_text.text())>100:
         a.showError("name", "Name too long", "author", a)
         ok = False
-    if len(a.author_text.text())>3000:
-        a.showError("notes", "Name too long", "author", a)
+    if len(a.notes_text.toPlainText())>3000:
+        a.showError("notes", "Notes too long", "author", a)
         ok = False
     #TODO check if the author exists in the DB
-
     return ok
+
+def checkDataBook(b)->bool:
+    ok = True
+    b.clearErrors("books",b)
+    if b.bookTitleText.text() == "":
+        b.showError("title", "Empty string detected", "book", b)
+        ok = False
+    elif len(b.bookTitleText.text())>100:
+        b.showError("title", "Title too long", "book", b)
+    if b.bookAuthorText.text() == "":
+        b.showError("author", "Empty string detected", "book", b)
+        ok = False
+    elif len(b.bookAuthorText.text())>100:
+        b.showError("author", "Author name too long", "book", b)
+    if len(b.bookNotesText.toPlainText())>3000:
+        b.showError("notes", "Notes too long", "book", b)
+    return ok
+
