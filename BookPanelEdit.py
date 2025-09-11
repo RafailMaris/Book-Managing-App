@@ -43,7 +43,7 @@ class BookPanelEdit(Panel):
         self.search_button = QPushButton("Back to search")
         self.buttons.addWidget(self.save_button)
         self.save_button.clicked.connect(lambda: self.saveChanges(db))
-        self.search_button.clicked.connect(lambda: self.returnToAdd(stack))
+        self.search_button.clicked.connect(lambda: self.returnToAdd(stack,panelView))
         self.buttons.addWidget(self.search_button)
         layout.addLayout(self.buttons)
         # Add stretch to push everything to top
@@ -70,8 +70,10 @@ class BookPanelEdit(Panel):
             changed = True
             print('changed')
         db.updateDB(self,"books",book,self.previousId,changed)
-    def returnToAdd(self,stack):
-        stack.setCurrentIndex(7)
+    def returnToAdd(self,stack,view: PanelView):
+
         model = self.panelView.table.model()
         newQuery = QSqlQuery(self.command)
         model.setQuery(newQuery)
+        view.prepareContent(model, "books", self.command)
+        stack.setCurrentIndex(7)

@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget,
     QStackedWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QTextEdit, QLineEdit, QSizePolicy,
-    QFormLayout, QSpacerItem
+    QFormLayout, QSpacerItem, QMessageBox
 )
 
 import AuthorPanelAdd
@@ -35,16 +35,20 @@ class MainWindow(QMainWindow):
         self.book_button = QPushButton("Books")
         self.quote_button = QPushButton("Quotes")
         self.author_button = QPushButton("Authors")
+        self.reset_button = QPushButton("Reset")
         # Make them expand equally
         self.book_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.quote_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.author_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.reset_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         # Menu layout (horizontally centered)
         button_layout = QHBoxLayout()
         button_layout.addStretch()  # left spacer
         button_layout.addWidget(self.author_button)
         button_layout.addWidget(self.book_button)
         button_layout.addWidget(self.quote_button)
+        button_layout.addWidget(self.reset_button)
         button_layout.addStretch()  # right spacer
 
         # Panel stack
@@ -52,9 +56,12 @@ class MainWindow(QMainWindow):
         self.stack = QStackedWidget()
         self.view = PanelView.PanelView(self.stack,db)
         self.stack.addWidget(Panel.Panel())
-        self.stack.addWidget(BookPanelAdd.BookPanelAdd(self.stack,db,self.view))
-        self.stack.addWidget(QuotePanelAdd.QuotePanelAdd(self.stack,db,self.view))
-        self.stack.addWidget(AuthorPanelAdd.AuthorPanelAdd(self.stack,db,self.view))
+        self.bookPanel = BookPanelAdd.BookPanelAdd(self.stack,db,self.view)
+        self.stack.addWidget(self.bookPanel)
+        self.quotePanel = QuotePanelAdd.QuotePanelAdd(self.stack,db,self.view)
+        self.stack.addWidget(self.quotePanel)
+        self.authorPanel = AuthorPanelAdd.AuthorPanelAdd(self.stack,db,self.view)
+        self.stack.addWidget(self.authorPanel)
         self.stack.addWidget(self.view)
         self.stack.setCurrentIndex(3)
         # Main layout
@@ -69,11 +76,13 @@ class MainWindow(QMainWindow):
         self.book_button.clicked.connect(self.show_book_panel)
         self.quote_button.clicked.connect(self.show_quote_panel)
         self.author_button.clicked.connect(self.show_author_panel)
+        self.reset_button.clicked.connect(lambda:self.resetDB(db))
         self.stack.currentChanged.connect(self.setButtons)
     def resetButtons(self):
         self.book_button.setStyleSheet("")
         self.quote_button.setStyleSheet("")
         self.author_button.setStyleSheet("")
+
 
     def setButtons(self, index: int):
         if not index == 7:
@@ -96,17 +105,32 @@ class MainWindow(QMainWindow):
 
     def show_book_panel(self):
         """Switch to the book management panel"""
+        self.bookPanel.clearErrors("books",self.bookPanel)
         self.stack.setCurrentIndex(4)
 
     def show_quote_panel(self):
         """Switch to the quote management panel"""
+        self.quotePanel.clearErrors("quotes",self.quotePanel)
         self.stack.setCurrentIndex(5)
 
 
     def show_author_panel(self):
         """Switch to the author management panel"""
+        self.authorPanel.clearErrors("author",self.authorPanel)
         self.stack.setCurrentIndex(6)
 
 
     def back_to_menu(self):
         self.stack.setCurrentIndex(3)
+
+    def resetDB(self,db:DB):
+
+        widget = QMessageBox()
+        widget.setWindowTitle("Confirm Delete")
+        widget.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        response = widget.exec()
+        if response == QMessageBox.StandardButton.Yes:
+            db.createTables(True)
+
+
+

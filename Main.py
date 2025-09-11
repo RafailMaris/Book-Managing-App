@@ -8,10 +8,10 @@ from PyQt6.QtWidgets import (
 import sys
 import MainWindow
 from DB import *
-
+import multiprocessing
 if __name__ == "__main__":
 
-
+    multiprocessing.freeze_support()
     #query = db.query
     app = QApplication(sys.argv)
     db = DB()

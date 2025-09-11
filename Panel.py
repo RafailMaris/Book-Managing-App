@@ -53,17 +53,21 @@ class Panel(QWidget):
         return error
 
     def showError(self, errorType: str, message: str, panelType: str, p):
-        if panelType == "quote":
+        if panelType == "quotes":
             if errorType == "start":
-                p.start_error.setText(message)
+                p.quoteStartError.setText(message)
             elif errorType == "end":
-                p.end_error.setText(message)
+                p.quoteEndError.setText(message)
             elif errorType == "author":
-                p.author_error.setText(message)
+                p.quoteAuthorError.setText(message)
             elif errorType == "title":
-                p.book_title_error.setText(message)
+                p.quoteBookTitleError.setText(message)
             elif errorType == "kw":
-                p.keywords_error.setText(message)
+                p.quoteKeywordError.setText(message)
+            elif errorType == "quote":
+                p.quoteError.setText(message)
+            elif errorType == "notes":
+                p.quoteNotesError.setText(message)
         elif panelType == "author":
             if errorType == "name":
                 p.author_error.setText(message)
@@ -78,12 +82,14 @@ class Panel(QWidget):
                 p.bookNotesError.setText(message)
 
     def clearErrors(self, panelType: str, p):
-        if panelType == "quote":
-            p.start_error.setText("")
-            p.end_error.setText("")
-            p.author_error.setText("")
-            p.book_title_error.setText("")
-            p.keywords_error.setText("")
+        if panelType == "quotes":
+            p.quoteStartError.setText("")
+            p.quoteEndError.setText("")
+            p.quoteAuthorError.setText("")
+            p.quoteBookTitleError.setText("")
+            p.quoteKeywordError.setText("")
+            p.quoteNotesError.setText("")
+            p.quoteError.setText("")
         elif panelType == "author":
             p.author_error.setText("")
             p.notes_error.setText("")

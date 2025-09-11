@@ -12,7 +12,7 @@ import TextValidation
 
 class QuotePanelAdd(Panel):
 
-    def __init__(self,stack,db: DB, panelView: PanelView):
+    def __init__(self,stack,db: DB, view: PanelView):
 
         super().__init__()
         layout = QVBoxLayout()
@@ -21,7 +21,7 @@ class QuotePanelAdd(Panel):
         # self.title_label.setFont(QFont('Google Sans', 30))
         # self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         # layout.addWidget(self.title_label)
-        titleLabel = self.setTitle(layout, "Citate")
+        titleLabel = self.setTitle(layout, "Citate - Add")
         quoteBookAuthorLayout = QHBoxLayout()
         quoteBookLayout = QVBoxLayout()
         quoteAuthorLayout = QVBoxLayout()
@@ -84,11 +84,11 @@ class QuotePanelAdd(Panel):
         self.keyword4 = self.setLineEditPage(self.quoteKeywordsText)
         self.keyword5 = self.setLineEditPage(self.quoteKeywordsText)
         layout.addLayout(self.quoteKeywordsText)
-        self.quoteKeywordError = self.setError(self.quoteKeywordsText)
+        self.quoteKeywordError = self.setError(layout)
         # Notes
         quoteNotesLabel = self.setLabel(layout, "Notițe")
         self.quoteNotesText = self.setText(layout)
-
+        self.quoteNotesError = self.setError(layout)
         # Add / view button
         self.save_button = QPushButton("Save Quote")
 
@@ -98,16 +98,8 @@ class QuotePanelAdd(Panel):
         button_layout.addWidget(self.search_button)
         layout.addLayout(button_layout)
         self.save_button.clicked.connect(lambda: db.addQuote(self))
-        self.search_button.clicked.connect(lambda: self.prepareSearch(stack,db))
+        self.search_button.clicked.connect(lambda: db.searchQuote(self,stack,view))
         layout.addStretch()
         self.setLayout(layout)
-    #TODO sa facem astea 2 metode mai ok, cica
-
-    def prepareSearch(self,stack,db):
-        #TODO un panel in care sa poti afisa doar tabelul. unul general, sau cate unul pentru fiecare tabel?
-        db.searchQuote(stack)
-
-
-
 
 #fwevw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrh

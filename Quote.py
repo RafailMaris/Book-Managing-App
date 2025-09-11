@@ -1,13 +1,24 @@
 class Quote:
-    bookId = ""
-    start =""
-    end = ""
+    id = ""
+    bookTitle = ""
+    author = ""
+    startPage =""
+    startRow = ""
+    endPage = ""
+    endRow = ""
     quote = ""
-    notes =""
-    def __init__(self, bookId, start, end, quote, notes):
-        self.bookId = bookId
-        self.start = start
-        self.end = end
+    notes = ""
+    genres = ""
+    def __init__(self,bookTitle,author,startPage,startRow,endPage,endRow,quote,notes,genres):
+        self.bookTitle = bookTitle
+        self.author = author
+        self.startPage = startPage
+        self.startRow = startRow
+        self.endPage = endPage
+        self.endRow = endRow
         self.quote = quote
         self.notes = notes
+        self.genres = genres
+
+
 

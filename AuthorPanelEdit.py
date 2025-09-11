@@ -28,7 +28,7 @@ class AuthorPanelEdit(Panel):
         self.save_button = QPushButton("Edit")
         self.save_button.clicked.connect(lambda: self.saveChanges(db))
         self.search_button = QPushButton("Back to search")
-        self.search_button.clicked.connect(lambda: self.returnToAdd(stack))
+        self.search_button.clicked.connect(lambda: self.returnToSearch(stack,panelView))
         self.buttons = QHBoxLayout()
         self.buttons.addWidget(self.save_button)
         self.buttons.addWidget(self.search_button)
@@ -54,12 +54,15 @@ class AuthorPanelEdit(Panel):
             changedName = True
         db.updateDB(self,"author",author,self.previousID,changedName)
 
-    def returnToAdd(self,stack):
-        stack.setCurrentIndex(7)
+    def returnToSearch(self,stack,view: PanelView):
+
         model = self.panelView.table.model()
-        print(self.command)
+
         new_query = QSqlQuery(self.command)
         model.setQuery(new_query)
+        view.prepareContent(model, "authors", self.command)
+
+        stack.setCurrentIndex(7)
 
 
 
