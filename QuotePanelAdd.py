@@ -1,13 +1,10 @@
 from PyQt6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTextEdit, QLineEdit
+    QVBoxLayout, QHBoxLayout, QPushButton
 )
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
 
 import DB
 import PanelView
 from Panel import Panel
-import TextValidation
 
 
 class QuotePanelAdd(Panel):
@@ -16,66 +13,58 @@ class QuotePanelAdd(Panel):
 
         super().__init__()
         layout = QVBoxLayout()
-        # Title of panel
-        # self.title_label = QLabel("Citate")
-        # self.title_label.setFont(QFont('Google Sans', 30))
-        # self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # layout.addWidget(self.title_label)
-        titleLabel = self.setTitle(layout, "Citate - Add")
+
+        self.setTitle(layout, "Citate - Add")
         quoteBookAuthorLayout = QHBoxLayout()
         quoteBookLayout = QVBoxLayout()
         quoteAuthorLayout = QVBoxLayout()
-        # Book title
-        quoteBookTitleLabel = self.setLabel(quoteBookLayout, "Carte")
+
+        self.setLabel(quoteBookLayout, "Carte")
         self.quoteBookTitleText = self.setLineEdit(quoteBookLayout, self.WIDTH)
         self.quoteBookTitleError = self.setError(quoteBookLayout)
-        # Author
-        quoteAuthorLabel = self.setLabel(quoteAuthorLayout, "Autor")
+
+        self.setLabel(quoteAuthorLayout, "Autor")
         self.quoteAuthorText = self.setLineEdit(quoteAuthorLayout, self.WIDTH)
         self.quoteAuthorError = self.setError(quoteAuthorLayout)
         quoteBookAuthorLayout.addLayout(quoteBookLayout)
         quoteBookAuthorLayout.addLayout(quoteAuthorLayout)
         layout.addLayout(quoteBookAuthorLayout)
-        # Quote
-        quoteLabel = self.setLabel(layout, "Citat")
+
+        self.setLabel(layout, "Citat")
         self.quoteText = self.setText(layout)
         self.quoteError = self.setError(layout)
 
-        # Start/End layout
         quoteStartEndLayout = QHBoxLayout()
 
-        # Start column
         quoteStartColumn = QVBoxLayout()
 
-        quoteStartLabel = self.setLabel(quoteStartColumn, "Start")
+        self.setLabel(quoteStartColumn, "Start")
 
         quoteStartLayout = QHBoxLayout()
 
-        quoteStartPageLabel = self.setLabel(quoteStartLayout, "Pagină:")
+        self.setLabel(quoteStartLayout, "Pagină:")
         self.quoteStartPageText = self.setLineEditPage(quoteStartLayout)
-        quoteStartRowLabel = self.setLabel(quoteStartLayout, "Rând:")
+        self.setLabel(quoteStartLayout, "Rând:")
         self.quoteStartRowText = self.setLineEditPage(quoteStartLayout)
         quoteStartColumn.addLayout(quoteStartLayout)
         self.quoteStartError = self.setError(quoteStartColumn)
 
-        # End column
         quoteEndColumn = QVBoxLayout()
-        quoteEndLabel = self.setLabel(quoteEndColumn, "Sfârșit")
+        self.setLabel(quoteEndColumn, "Sfârșit")
         quoteEndLayout = QHBoxLayout()
-        quoteEndPageLabel = self.setLabel(quoteEndLayout, "Pagină:")
+        self.setLabel(quoteEndLayout, "Pagină:")
         self.quoteEndPageText = self.setLineEditPage(quoteEndLayout)
-        quoteEndRowLabel = self.setLabel(quoteEndLayout, "Rând:")
+        self.setLabel(quoteEndLayout, "Rând:")
         self.quoteEndRowText = self.setLineEditPage(quoteEndLayout)
         quoteEndColumn.addLayout(quoteEndLayout)
         self.quoteEndError = self.setError(quoteEndColumn)
 
-        # Add both to layout
+
         quoteStartEndLayout.addLayout(quoteStartColumn)
         quoteStartEndLayout.addLayout(quoteEndColumn)
         layout.addLayout(quoteStartEndLayout)
 
-        # Keywords
-        quoteKeywordLabel = self.setLabel(layout, "Cuvinte cheie")
+        self.setLabel(layout, "Cuvinte cheie")
         self.quoteKeywordsText = QHBoxLayout()
 
         self.keyword1 = self.setLineEditPage(self.quoteKeywordsText)
@@ -85,11 +74,11 @@ class QuotePanelAdd(Panel):
         self.keyword5 = self.setLineEditPage(self.quoteKeywordsText)
         layout.addLayout(self.quoteKeywordsText)
         self.quoteKeywordError = self.setError(layout)
-        # Notes
-        quoteNotesLabel = self.setLabel(layout, "Notițe")
+
+        self.setLabel(layout, "Notițe")
         self.quoteNotesText = self.setText(layout)
         self.quoteNotesError = self.setError(layout)
-        # Add / view button
+
         self.save_button = QPushButton("Save Quote")
 
         self.search_button = QPushButton("Search Quote")
@@ -101,5 +90,3 @@ class QuotePanelAdd(Panel):
         self.search_button.clicked.connect(lambda: db.searchQuote(self,stack,view))
         layout.addStretch()
         self.setLayout(layout)
-
-#fwevw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrhvw4egehrh

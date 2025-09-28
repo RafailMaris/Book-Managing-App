@@ -8,11 +8,11 @@ class AuthorPanelAdd(Panel):
     def __init__(self,stack,db: DB, view: PanelView):
         layout = QVBoxLayout()
         super().__init__()
-        self.title_label = self.setTitle(layout, "Autor - Add")
-        self.author_label = self.setLabel(layout,"Nume")
+        self.setTitle(layout, "Autor - Add")
+        self.setLabel(layout,"Nume")
         self.author_text = self.setLineEdit(layout,self.WIDTH)
         self.author_error = self.setError(layout)
-        self.notes_label = self.setLabel(layout,"Notițe")
+        self.setLabel(layout,"Notițe")
         self.notes_text = self.setText(layout)
 
         self.notes_error = self.setError(layout)

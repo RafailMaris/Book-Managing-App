@@ -53,7 +53,6 @@ def checkDataQuote(q: QuotePanelAdd) -> bool:
     endRow = q.quoteEndRowText.text()
     startNum = False
     endNum = False
-    print(startPage)
     if not is_numeric(startPage) or not is_numeric(startRow):
         q.showError("start","Not numeric","quotes",q)
         dataOk = False
@@ -106,7 +105,6 @@ def checkDataBook(b)->bool:
     b.clearErrors("books",b)
     if b.bookTitleText.text() == "":
         b.showError("title", "Empty string detected", "books", b)
-        print('empty book title')
         ok = False
     elif len(b.bookTitleText.text())>200:
         b.showError("title", "Title too long", "books", b)

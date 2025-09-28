@@ -9,21 +9,27 @@ import QuotePanelAdd
 from BookPanelAdd import BookPanelAdd
 from PanelView import PanelView
 from TextValidation import checkDataAuthor, checkDataBook, checkDataQuote
-
+import Constants
 
 class DB:
     def __init__(self):
+        self.authorIdCache = {}
+        self.bookIdCache = {}
+        self.genreIdCache = {}
         self.db = QSqlDatabase.addDatabase("QSQLITE")
-        self.db.setDatabaseName("text.db")
+        self.db.setDatabaseName("books.db")
         if not self.db.open():
-            print('can not open DB')
-            exit(1)
-        else:
-            print('aaaa')
-        # self.db = sqlite3.connect('books.db')
-        # self.cursor = self.db.cursor()
-       # self.db.open()
+            print('Can not open DB')
+            exit(Constants.DB_OPEN_ERROR)
+
         self.createTables(False)
+    def executeQuery(self, queryStr: str, params = None) -> QSqlQuery:
+        query = QSqlQuery(self.db)
+        query.prepare(queryStr)
+        for p in params:
+            query.addBindValue(p)
+        query.exec()
+        return query
 
     def dropTables(self):
         query = QSqlQuery(self.db)
@@ -32,85 +38,50 @@ class DB:
         query.exec("DROP TABLE IF EXISTS authors")
         query.exec("DROP TABLE IF EXISTS genres")
         query.exec("DROP TABLE IF EXISTS genresQuote")
-       
-
     def createTables(self,dropQ:bool):
         if dropQ:
             self.dropTables()
         query = QSqlQuery(self.db)
-        query.exec("""
-            CREATE TABLE IF NOT EXISTS books (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                authorId INTEGER,
-                notes TEXT,
-                FOREIGN KEY(authorId) REFERENCES authors(id)
-            )
-        """)
-        query.exec("""
-            CREATE TABLE IF NOT EXISTS authors (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                notes TEXT
-            )
-        """)
-        query.exec("""
-            CREATE TABLE IF NOT EXISTS genres (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL
-            )
-        """)
-        query.exec("""
-            CREATE TABLE IF NOT EXISTS quotes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                bookId INTEGER NOT NULL,
-                quote TEXT NOT NULL,
-                startPage VARCHAR(4) NOT NULL,
-                endPage VARCHAR(4) NOT NULL,
-                startRow VARCHAR(4) NOT NULL,
-                endRow VARCHAR(4) NOT NULL,
-                notes TEXT NOT NULL,
-                FOREIGN KEY(bookId) REFERENCES books(id)
-            )
-        """)
-
-        query.exec("""
-        CREATE TABLE IF NOT EXISTS genresQuote (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            quoteId INTEGER NOT NULL,
-            genreId INTEGER NOT NULL,
-            FOREIGN KEY(quoteId) REFERENCES quotes(id),
-            FOREIGN KEY(genreId) REFERENCES genres(id)
-        )
-        
-            """)
-
+        query.exec(Constants.BOOK_TABLE_CREATE)
+        query.exec(Constants.AUTHOR_TABLE_CREATE)
+        query.exec(Constants.GENRE_TABLE_CREATE)
+        query.exec(Constants.QUOTE_TABLE_CREATE)
+        query.exec(Constants.GENRE_QUOTE_TABLE_CREATE)
 
     def getAuthorId(self, name: str) -> int:
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT id FROM authors WHERE name = ? COLLATE NOCASE;")
-        query.addBindValue(name)
-        query.exec()
+        if name in self.authorIdCache:
+            return self.authorIdCache[name]
+        queryStr = "SELECT id FROM authors WHERE name = ? COLLATE NOCASE;"
+        params = (name,)
+        query = self.executeQuery(queryStr, params)
+
         if query.next():  # Move cursor to first row
-            return query.value(0)  # author exists
+            authorId = query.value(0)
+            self.authorIdCache[name] = authorId
+            return authorId
         return -1
     def getBookId(self, title: str,authorId: int) -> int:
-        query = QSqlQuery(self.db)
-        print(f"authorId is {authorId} title is {title}")
-        query.prepare("SELECT id FROM books WHERE title = ? COLLATE NOCASE AND authorId = ?;")
-        query.addBindValue(title)
-        query.addBindValue(authorId)
-        query.exec()
-        if query.next(): return query.value(0)
+        if title in self.bookIdCache:
+            return self.bookIdCache[title]
+        queryStr = "SELECT id FROM books WHERE title = ? COLLATE NOCASE AND authorId = ?;"
+        params = (title,authorId)
+        query = self.executeQuery(queryStr, params)
+        if query.next():
+            bookId = query.value(0)
+            self.bookIdCache[title] = bookId
+            return bookId
         return -1
     def getGenreId(self, name: str) -> int:
         if name!="":
-            query = QSqlQuery(self.db)
-            query.prepare("SELECT id FROM genres WHERE name = ? COLLATE NOCASE;")
-            query.addBindValue(name)
-            query.exec()
+            if name in self.genreIdCache:
+                return self.genreIdCache[name]
+            queryStr = "SELECT id FROM genres WHERE name = ? COLLATE NOCASE;"
+            params = (name,)
+            query = self.executeQuery(queryStr, params)
             if query.next():
-                return query.value(0)
+                genreId = query.value(0)
+                self.genreIdCache[name] = genreId
+                return genreId
             return self.addGenres(name)
         return -1
 
@@ -118,50 +89,26 @@ class DB:
     def addAuthors(self, a: AuthorPanelAdd):
         if checkDataAuthor(a):
             if self.getAuthorId(a.author_text.text()) == -1: # if it does not exist, we must add
-                query = QSqlQuery(self.db)
-                query.prepare("INSERT INTO authors (name, notes) VALUES (?, ?)")
-                query.addBindValue(str(a.author_text.text()).strip())
-                query.addBindValue(str(a.notes_text.toPlainText()).strip())
-                query.exec()
-
+                queryStr = "INSERT INTO authors (name, notes) VALUES (?, ?)"
+                name = str(a.author_text.text()).strip()
+                notes = str(a.notes_text.toPlainText()).strip()
+                params = (name, notes)
+                self.executeQuery(queryStr, params)
             else:
                 a.showError("name", "Author exists", "author", a)
-
-    def checkQuoteExist(self, bookId: int, quote:str) -> bool:
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT id FROM quotes WHERE bookId = ? AND quote = ? COLLATE NOCASE;")
-        print(f"SELECT id FROM quotes WHERE bookId = {bookId} AND quote = {quote} COLLATE NOCASE;")
-        query.addBindValue(str(bookId).strip())
-        query.addBindValue(str(quote).strip())
-        query.exec()
-        if query.next(): return True
-        return False
-    def checkGenreExist(self, name: str) -> bool:
-        genreId = self.getGenreId(name)
-        if genreId == -1:
-            return False
-        return True
     def addGenres(self, name: str)->int:
-        query = QSqlQuery(self.db)
-        query.prepare("INSERT INTO genres (name) VALUES (?)")
-        query.addBindValue(name)
+        queryStr = "INSERT INTO genres (name) VALUES (?)"
+        params = (name,)
+        query = self.executeQuery(queryStr, params)
         if not query.exec():
             exit(-1)
         return query.lastInsertId()
 
     def addQuoteGenre(self, quoteId: int, genreId: int):
-        query = QSqlQuery(self.db)
-        query.prepare("INSERT INTO genresQuote (quoteId, genreId) VALUES (?, ?)")
-        query.addBindValue(quoteId)
-        query.addBindValue(genreId)
+        queryStr = "INSERT INTO genresQuote (quoteId, genreId) VALUES (?, ?)"
+        params = (quoteId, genreId)
+        query = self.executeQuery(queryStr, params)
 
-        if not query.exec():
-            exit(-1)
-    #def manageGenres(self,quoteId: int, ):
-    def clearQuoteGenre(self, quoteId: int):
-        query = QSqlQuery(self.db)
-        query.prepare("DELETE FROM genresQuote WHERE quoteId = ?")
-        query.addBindValue(quoteId)
         if not query.exec():
             exit(-1)
     def addQuote(self, q: QuotePanelAdd):
@@ -180,17 +127,16 @@ class DB:
                 q.showError("author", "Author doesn't exist", "quotes", q)
             else:
                 bookId = self.getBookId(q.quoteBookTitleText.text(),authorId)
-                print(f"bookId is {bookId}")
+
                 if bookId == -1:
                     q.showError("title", "Book doesn't exist for this author", "quotes", q)
                 else:
                     if self.checkQuoteExist(bookId, quote):
                         q.showError("quote", "Quote exists", "quotes", q)
                     else:
-                        command = f"INSERT INTO quotes (bookId, quote, startPage, endPage, startRow, endRow, notes) VALUES ({bookId}, '{quote}', {startPage}, {endPage}, {startRow}, {endRow}, '{notes}')"
-                        print(command)
-                        query = QSqlQuery(self.db)
-                        query.prepare(command)
+                        queryStr = "INSERT INTO quotes (bookId, quote, startPage, endPage, startRow, endRow, notes) VALUES (?, ?, ?, ?, ?, ?, ?)"
+                        params = (bookId, quote, startPage, endPage,startRow, endRow, notes)
+                        query = self.executeQuery(queryStr, params)
                         if not query.exec():
                             exit(-1)
                         quoteId = query.lastInsertId()
@@ -198,9 +144,30 @@ class DB:
                         notNullGenresId = [self.getGenreId(s) for s in genres if s!=""]
                         for genreId in notNullGenresId:
                             self.addQuoteGenre(quoteId, genreId)
+    def addBooks(self, b: BookPanelAdd):
+        if checkDataBook(b):
+            authorId = self.getAuthorId(b.bookAuthorText.text())
+            if authorId == -1:
+                b.showError("author", "Author does not exist", "books", b)
+            else: #that author exists => check if maybe it already exists
+                if not self.checkBookExist(b.bookTitleText.text(),authorId):
+                    queryStr = "INSERT INTO books (title, authorId, notes) VALUES (?, ?, ?)"
+                    title = str(b.bookTitleText.text()).strip()
+                    authorId = str(authorId)
+                    notes = b.bookNotesText.toPlainText()
+                    params = (title,authorId,notes)
+                    query = self.executeQuery(queryStr, params)
+                else:
+                    b.showError("author", "This author already has a book with this title", "books", b)
 
-
-            #TODO INSERTION
+    def checkQuoteExist(self, bookId: int, quote:str) -> bool:
+        queryStr = "SELECT id FROM quotes WHERE bookId = ? AND quote = ? COLLATE NOCASE;"
+        bookId = str(bookId).strip()
+        quote = str(quote).strip()
+        params = (bookId, quote)
+        query = self.executeQuery(queryStr, params)
+        if query.next(): return True
+        return False
     def checkBookExist(self, title: str, authorId: int) -> bool:
         query = QSqlQuery(self.db)
         query.prepare("SELECT id FROM books WHERE title = ? COLLATE NOCASE AND authorId = ? ;")
@@ -209,65 +176,48 @@ class DB:
         query.exec()
         if query.next(): return True
         return False
-
-    def addBooks(self, b: BookPanelAdd):
-        # if check book ok:
-        # get id of author => change method to check author to return the id, else -1
-        # search for the book with the name and the author
-        # if exist: bad.
-        # else: insert it
-        if checkDataBook(b):
-            authorId = self.getAuthorId(b.bookAuthorText.text())
-            if authorId == -1:
-                b.showError("author", "Author does not exist", "books", b)
-            else: #that author exists => check if maybe it already exists
-                if not self.checkBookExist(b.bookTitleText.text(),authorId):
-                    query = QSqlQuery(self.db)
-                    query.prepare("INSERT INTO books (title, authorId, notes) VALUES (?, ?, ?)")
-                    query.addBindValue(str(b.bookTitleText.text()).strip())
-                    query.addBindValue(str(authorId))
-                    query.addBindValue(b.bookNotesText.toPlainText())
-                    query.exec()
-
-                else:
-                    b.showError("author", "This author already has a book with this title", "books", b)
+    def clearQuoteGenre(self, quoteId: int):
+        query = QSqlQuery(self.db)
+        query.prepare("DELETE FROM genresQuote WHERE quoteId = ?")
+        query.addBindValue(quoteId)
+        if not query.exec():
+            exit(-1)
 
     def searchBooks(self,stack, b: BookPanelAdd, view: PanelView):
-        # what to show: id, title, author NAME, notes => put in the query the name instead of id
+
         authorName = b.bookAuthorText.text().strip()
         model = QSqlQueryModel()
         command = """
                   SELECT 
-                    b.id AS No,
+                    b.id as Id,
                     b.title AS Titlu, 
                     a.name  AS Autor,
-                    b.notes AS Notițe
+                    b.notes AS Notițe,
+                    (SELECT COUNT(*) 
+                       FROM quotes q 
+                      WHERE q.bookId = b.id) AS "No citate"
                   FROM books b
                     JOIN authors a ON b.authorId = a.id
                   """
         if b.bookAuthorText.text().strip() != "":
             authorId = self.getAuthorId(b.bookAuthorText.text())
             if b.bookTitleText.text() != "":
-               
+
                 command+=f"WHERE b.title LIKE '%{b.bookTitleText.text()}%' COLLATE NOCASE AND a.name LIKE '%{authorName}%' COLLATE NOCASE;"
             else :
                 command+=f"WHERE a.name LIKE '%{authorName}%' COLLATE NOCASE;"
         else:
             if b.bookTitleText.text().strip() != "":
                 command+=f"WHERE b.title LIKE '%{b.bookTitleText.text().strip()}%' COLLATE NOCASE;"
-        print(command)
+
         query =QSqlQuery(self.db)
         query.prepare(command)
         query.exec()
         model.setQuery(command)
         view.prepareContent(model,"books",command)
-        model.setHeaderData(0,Qt.Orientation.Horizontal,"No")
-        model.setHeaderData(1,Qt.Orientation.Horizontal,"Title")
-        model.setHeaderData(2,Qt.Orientation.Horizontal,"Author")
-        model.setHeaderData(3,Qt.Orientation.Horizontal,"Notes")
+
+
         stack.setCurrentIndex(7)
-
-
     def searchQuote(self, quoteAdd: QuotePanelAdd,stack, view: PanelView):
         model = QSqlQueryModel()
         bookTitle = quoteAdd.quoteBookTitleText.text().strip()
@@ -346,26 +296,34 @@ class DB:
         model.setQuery(query)
         view.prepareContent(model,"quotes",command)
         stack.setCurrentIndex(7)
-
     def searchAuthors(self, stack, authorAdd: AuthorPanelAdd, view: PanelView):
         model = QSqlQueryModel()
 
-        command = "SELECT * FROM authors"
+        command = """
+                  SELECT 
+                    a.id AS Id,
+                    a.name AS Nume,
+                    a.notes AS Notițe,
+                    (SELECT COUNT(*) FROM books b WHERE b.authorId = a.id) AS "No cărți",
+                    (SELECT COUNT(*) 
+                       FROM quotes q 
+                       JOIN books b ON q.bookId = b.id
+                      WHERE b.authorId = a.id) AS "No citate"
+                FROM authors a
+                    """
         if authorAdd.author_text.text() != "":
             query = QSqlQuery(self.db)
-            command = f"SELECT * FROM authors WHERE name LIKE '%{str(authorAdd.author_text.text())}%' COLLATE NOCASE;"
+            command += f"WHERE name LIKE '%{str(authorAdd.author_text.text())}%' COLLATE NOCASE;"
             print(command)
             query.prepare(command)
-            #query.addBindValue(f"%{authorAdd.author_text.text()}%")
+
             query.exec()
             model.setQuery(query)
         else:
-            model.setQuery("SELECT * FROM authors",self.db)
-            print("all")
+
+            model.setQuery(command,self.db)
+            print(command)
         view.prepareContent(model,"authors",command)
-        model.setHeaderData(0, Qt.Orientation.Horizontal, "No")
-        model.setHeaderData(1, Qt.Orientation.Horizontal, "Nume")
-        model.setHeaderData(2, Qt.Orientation.Horizontal, "Notite")
         stack.setCurrentIndex(7)
 
     def updateDB(self,a, type,newObj,previousID,isPrimaryKeyChanged: bool):
@@ -413,7 +371,7 @@ class DB:
                     bookId = self.getBookId(newObj.bookTitle, authorId)
                     if bookId == -1:
                         a.showError("title", "Book doesn't exist", "quotes", a)
-                        return 
+                        return
                     print('changed: '+str(isPrimaryKeyChanged))
                     if (isPrimaryKeyChanged and not self.checkQuoteExist(bookId,newObj.quote)) or not isPrimaryKeyChanged:
 
@@ -434,7 +392,9 @@ class DB:
                             print("ok")
                     else:
                         a.showError("quote", "Information conflict with existing", "quotes", a)
-    def deleteEntry(self, currentType:str,identificator:int):
+
+    def deleteEntry(self, currentType:str,identificator: int):
+
         query = QSqlQuery(self.db)
         principalCommand = f"DELETE FROM {currentType} WHERE id = {identificator}"
         if currentType == "authors":
