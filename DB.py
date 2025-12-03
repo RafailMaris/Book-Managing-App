@@ -10,6 +10,8 @@ from BookPanelAdd import BookPanelAdd
 from PanelView import PanelView
 from TextValidation import checkDataAuthor, checkDataBook, checkDataQuote
 import Constants
+import sys
+import os
 
 class DB:
     def __init__(self):
@@ -19,7 +21,6 @@ class DB:
         self.db = QSqlDatabase.addDatabase("QSQLITE")
         self.db.setDatabaseName("books.db")
         if not self.db.open():
-            print('Can not open DB')
             exit(Constants.DB_OPEN_ERROR)
 
         self.createTables(False)
