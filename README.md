@@ -93,11 +93,3 @@ If you modify database access patterns, be careful to avoid executing the same q
 - Submit PRs against `main` with a clear description of the change and tests where applicable.
 
 ---
-
-## License
-
-No license specified. Add a `LICENSE` file if you want to clarify usage rights.
-
----
-
-If you want, I can also add a short troubleshooting section, screenshots, or a developer environment checklist. Let me know what you'd like next. ✨
