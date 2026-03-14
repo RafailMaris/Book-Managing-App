@@ -519,7 +519,7 @@ if __name__ == "__main__":
 def llm_summary(promt):
     from groq import Groq
 
-    client = Groq(api_key="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")
+    client = Groq(api_key="THE_GROQ_API_KEY")
 
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
