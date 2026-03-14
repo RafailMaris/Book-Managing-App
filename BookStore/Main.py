@@ -83,7 +83,6 @@ if __name__ == "__main__":
 
     # from groq import Groq
     #
-    # client = Groq(api_key="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")
     #
     # completion = client.chat.completions.create(
     #     model="llama-3.3-70b-versatile",
