@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Recommendations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .search-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between elements */
+}
+
+        .search-input {
+            flex: 1;
+            padding: 18px 25px;
+            font-size: 1.1em;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            padding: 18px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Modal Overlay */
+
+
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Modal Content */
+/* Updated Modal Overlay - Removed blur to stop the glitch */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* Darkened slightly since blur is gone */
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Updated Modal Content - Added background and border-radius */
+.modal {
+    background: white; /* Added this to prevent transparency issues */
+    border-radius: 20px;
+    max-height: 85vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 90%;
+    max-width: 1000px; /* Prevents the modal from getting too wide */
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+        .modal-overlay.active .modal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            position: relative;
+        }
+
+        .modal-header h2 {
+            font-size: 1.8em;
+            margin-bottom: 8px;
+        }
+
+        .modal-header p {
+            opacity: 0.95;
+            font-size: 1em;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.8em;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .recommendation-list {
+            list-style: none;
+        }
+
+        .recommendation-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .recommendation-item {
+            transform: translateX(-20px);
+        }
+
+        .recommendation-item:nth-child(1) { animation-delay: 0.1s; }
+        .recommendation-item:nth-child(2) { animation-delay: 0.15s; }
+        .recommendation-item:nth-child(3) { animation-delay: 0.2s; }
+        .recommendation-item:nth-child(4) { animation-delay: 0.25s; }
+        .recommendation-item:nth-child(5) { animation-delay: 0.3s; }
+        .recommendation-item:nth-child(6) { animation-delay: 0.35s; }
+        .recommendation-item:nth-child(7) { animation-delay: 0.4s; }
+        .recommendation-item:nth-child(8) { animation-delay: 0.45s; }
+        .recommendation-item:nth-child(9) { animation-delay: 0.5s; }
+        .recommendation-item:nth-child(10) { animation-delay: 0.55s; }
+
+        .recommendation-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .book-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3em;
+            flex-shrink: 0;
+        }
+
+        .book-title {
+            flex: 1;
+            font-size: 1.1em;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #c33;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .logout-btn {
+            margin-left: 12px;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .modal {
+                width: 95%;
+                max-height: 90vh;
+            }
+
+            .modal-header h2 {
+                font-size: 1.4em;
+            }
+
+            .recommendation-item {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+        .modal-split {
+    display: grid;
+    grid-template-columns: 2.3fr 1fr;
+    gap: 20px;
+    height: 100%;
+}
+
+.modal-left {
+    overflow-y: auto;
+    border-right: 1px solid #e0e0e0;
+    padding-right: 15px;
+}
+
+.modal-right {
+    overflow-y: auto;
+    padding-left: 15px;
+}
+
+.summary-placeholder {
+    color: #666;
+    font-style: italic;
+}
+.summary-header {
+    margin-bottom: 12px;
+}
+
+.summary-source {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 4px 10px;
+    border-radius: 12px;
+    display: inline-block;
+}
+.summary-actions {
+    margin-top: 20px;
+    text-align: right;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- User Info (would be populated by Django template) -->
+        <div class="user-info">
+            <span>Welcome, {{ user.username }}</span>
+
+            <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Logout</button>
+    </form>
+            <button type ="submit" id = "receiveNotif" class ="logout-btn">Receive newly added data to mail</button>
+</div>
+
+
+        <div class="header">
+            <h1>📚 Book Recommendations</h1>
+            <p>Discover your next favorite book</p>
+        </div>
+
+    <div class="search-card">
+        <form class="search-form" id="searchForm">
+            <input
+                type="text"
+                class="search-input"
+                id="bookInput"
+                placeholder="Enter a book title you love..."
+                required
+                autocomplete="off"
+            >
+            <input
+                type="text"
+                class="search-input"
+                id="authorInput"
+                placeholder="Enter the author (optional)"
+                autocomplete="off"
+            >
+            <button type="submit" class="search-btn" id="searchBtn">
+                Get Recommendations
+            </button>
+            <button id="emailBtn" class="search-btn">Email the recommendations</button>
+
+        </form>
+    </div>
+
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <button class="close-btn" id="closeBtn">&times;</button>
+                <h2>Recommendations</h2>
+                <p id="modalSubtitle">Based on your search</p>
+            </div>
+            <div class="modal-body modal-split">
+            <div class="modal-left" id="recommendationPane"></div>
+           <div class="modal-right">
+    <div id="summaryPane">
+        <p class="summary-placeholder">
+            Click a book to see its summary
+        </p>
+    </div>
+    <div id="summaryActions"></div>
+</div>
+</div>
+
+        </div>
+    </div>
+
+    <script>
+        // Get CSRF token from Django
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        const searchForm = document.getElementById('searchForm');
+        const bookInput = document.getElementById('bookInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const closeBtn = document.getElementById('closeBtn');
+
+        const modalSubtitle = document.getElementById('modalSubtitle');
+
+        // Show loading state
+function showLoading() {
+    currentSummary = null;
+currentSummaryMeta = {};
+document.getElementById("summaryActions").innerHTML = "";
+    document.getElementById("recommendationPane").innerHTML = `
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Finding perfect recommendations for you...</p>
+        </div>
+    `;
+
+    document.getElementById("summaryPane").innerHTML = `
+        <p class="summary-placeholder">
+            Click a book to see its summary
+        </p>
+    `;
+}
+
+
+        // Show error
+function showError(message) {
+    document.getElementById("recommendationPane").innerHTML = `
+        <div class="error-message">
+            <strong>Oops!</strong> ${message}
+        </div>
+    `;
+}
+
+
+        // Show recommendations
+        function showRecommendations(bookName, recommendations) {
+            modalSubtitle.textContent = `Based on "${bookName}". Press on an entry for a summary!`;
+
+            if (recommendations.length === 0) {
+                modalBody.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📖</div>
+                        <h3>No recommendations found</h3>
+                        <p>Try searching for a different book</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+    <ul class="recommendation-list">
+        ${recommendations.map((book, index) => `
+            <li class="recommendation-item">
+                <div class="book-number">${index + 1}</div>
+
+                <div class="book-content"
+                     onclick="getSummary('${book.title}', '${book.author}')"
+                >
+                    <div class="book-title">
+                        ${book.title}
+                        <span class="book-author">by ${book.author}. Recommended via: ${book.type}</span>
+                    </div>
+
+                    <img
+                        class="book-preview"
+                        src="${book.image}"
+                        alt="Cover of ${book.title}"
+                    />
+                </div>
+            </li>
+        `).join('')}
+    </ul>
+`;
+
+           document.getElementById("recommendationPane").innerHTML = html;
+        }
+
+        // Open modal
+        function openModal() {
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close modal
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Handle form submission
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const bookName = bookInput.value.trim();
+            const authorName = document.getElementById('authorInput').value.trim();
+            if (!bookName) return;
+
+            // Disable button and show loading
+            searchBtn.disabled = true;
+            searchBtn.textContent = 'Searching...';
+
+            openModal();
+            showLoading();
+
+            try {
+                const response = await fetch('/recommendations/api/recommend/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        book_name: bookName ,
+                        author_name: authorName
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+
+                    showRecommendations(data.book_name, data.recommendations);
+                } else {
+                    showError(data.error || 'Unable to get recommendations');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Get Recommendations';
+            }
+        });
+
+        // Close modal events
+        closeBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+
+        // ESC key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                closeModal();
+            }
+        });
+
+        const emailBtn = document.getElementById('emailBtn');
+
+emailBtn.addEventListener('click', async () => {
+    emailBtn.disabled = true;
+    emailBtn.textContent = 'Sending...';
+
+    const bookName = bookInput.value.trim();
+    const recommendations = Array.from(document.querySelectorAll('.book-title')).map(el => el.textContent);
+
+    try {
+        const response = await fetch('/recommendations/api/email/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({
+                book_name: bookName,
+                recommendations: recommendations
+            })
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert('Recommendations sent to your email!');
+        } else {
+            alert('Error sending email: ' + data.error);
+        }
+    } catch (err) {
+        alert('Network error. Please try again.');
+        console.error(err);
+    } finally {
+        emailBtn.disabled = false;
+        emailBtn.textContent = 'Email Recommendations';
+    }
+});
+let currentSummary = null;
+let currentSummaryMeta = {};
+async function getSummary(title, author) {
+    const summaryPane = document.getElementById("summaryPane");
+
+    summaryPane.innerHTML = `
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Generating summary...</p>
+        </div>
+    `;
+
+    try {
+        const res = await fetch("/recommendations/api/summary/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken
+            },
+            body: JSON.stringify({ title, author })
+        });
+
+        const data = await res.json();
+        const sourceLabel = data.cached
+            ? "⚡ Loaded from cache"
+            : "🤖 Generated by AI";
+        summaryPane.innerHTML = `
+    <div class="summary-header">
+        <span class="summary-source">${sourceLabel}</span>
+    </div>
+    <p><div class = "summaryText">${data.summary}</div></p>
+`;
+        document.getElementById("summaryActions").innerHTML = `
+    <div class="summary-actions">
+        <button class="search-btn"
+                onclick="emailSummary('${title}', '${author}')">
+            Email this summary
+        </button>
+    </div>
+`;
+        currentSummary = data.summary;
+currentSummaryMeta = { title, author };
+
+summaryPane.innerHTML = `
+    <div class="summary-header">
+        <span class="summary-source">${sourceLabel}</span>
+    </div>
+    <p>${data.summary}</p>
+`;
+
+document.getElementById("summaryActions").innerHTML = `
+    <div class="summary-actions">
+        <button class="search-btn" onclick="emailSummary()">
+            Email this summary
+        </button>
+    </div>
+`;
+
+    } catch {
+        summaryPane.innerHTML = `<p class="error-message">Failed to load summary</p>`;
+    }
+}
+async function emailSummary() {
+    if (!currentSummary) {
+        alert("No summary to send.");
+        return;
+    }
+
+    try {
+        const res = await fetch("/recommendations/api/emailSum/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken
+            },
+            body: JSON.stringify({
+                title: currentSummaryMeta.title,
+                author: currentSummaryMeta.author,
+                summary: currentSummary
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            alert("Summary emailed successfully 📧");
+        } else {
+            alert(data.error || "Failed to send summary");
+        }
+    } catch (err) {
+        alert("Network error");
+        console.error(err);
+    }
+}
+const notifBtn = document.getElementById("receiveNotif");
+
+notifBtn.addEventListener("click", async () => {
+    notifBtn.disabled = true;
+    notifBtn.textContent = "Sending...";
+
+    try {
+        const response = await fetch("/recommendations/api/emailNotif/", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrftoken
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert("📧 Latest entries sent to your email!");
+        } else {
+            alert("Error: " + (data.error || "Failed to send email"));
+        }
+    } catch (err) {
+        alert("Network error. Please try again.");
+        console.error(err);
+    } finally {
+        notifBtn.disabled = false;
+        notifBtn.textContent = "Receive newly added data to mail";
+    }
+});
+
+    </script>
+</body>
+</html>

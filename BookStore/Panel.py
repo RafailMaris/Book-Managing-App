@@ -1,0 +1,103 @@
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (
+    QWidget,
+    QLabel, QTextEdit, QLineEdit
+)
+class Panel(QWidget):
+    LABEL_FONT = QFont('Google Sans', 18)
+    TEXT_FONT = QFont('Google Sans', 16)
+    INFO_FONT = QFont('Google Sans', 12)
+    WIDTH = 400
+    SMALL_WIDTH = 150
+    SPACING = 20
+    ERROR_STYLE = "color: red; font-size: 12px;"
+    def __init__(self,logicalLevel):
+        super().__init__()
+        self.logicalLevel = logicalLevel
+    def setTitle(self,layout,title) -> QLabel:
+        title_label = QLabel(title)
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_label.setFont(QFont('Google Sans', 30))
+        layout.addWidget(title_label)
+        return title_label
+
+    def setLabel(self,layout,text) -> QLabel:
+        label = QLabel(text)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label.setFont(self.LABEL_FONT)
+        label.setText(text)
+        layout.addWidget(label)
+        return label
+
+    def setText(self, layout) -> QTextEdit:
+        text_field = QTextEdit()
+        text_field.setFont(self.TEXT_FONT)
+        layout.addWidget(text_field)
+        return text_field
+
+    def setLineEdit(self,layout,width) -> QLineEdit:
+        text_field = QLineEdit()
+        text_field.setFont(self.TEXT_FONT)
+        text_field.setFixedWidth(width)
+        layout.addWidget(text_field,alignment=Qt.AlignmentFlag.AlignCenter)
+        return text_field
+    def setLineEditPage(self,layout) -> QLineEdit:
+        text_field = QLineEdit()
+        text_field.setFont(self.TEXT_FONT)
+        layout.addWidget(text_field, alignment=Qt.AlignmentFlag.AlignCenter)
+        return text_field
+    def setError(self,layout) -> QLabel:
+        error = QLabel()
+        error.setStyleSheet(self.ERROR_STYLE)
+        layout.addWidget(error, alignment = Qt.AlignmentFlag.AlignCenter)
+        return error
+
+    def showError(self, errorType: str, message: str, panelType: str, p):
+        if panelType == "quotes":
+            if errorType == "start":
+                p.quoteStartError.setText(message)
+            elif errorType == "end":
+                p.quoteEndError.setText(message)
+            elif errorType == "author":
+                p.quoteAuthorError.setText(message)
+            elif errorType == "title":
+                p.quoteBookTitleError.setText(message)
+            elif errorType == "kw":
+                p.quoteKeywordError.setText(message)
+            elif errorType == "quote":
+                p.quoteError.setText(message)
+            elif errorType == "notes":
+                p.quoteNotesError.setText(message)
+        elif panelType == "author":
+            if errorType == "name":
+                p.author_error.setText(message)
+            elif errorType == "notes":
+                p.notes_error.setText(message)
+        elif panelType == "books":
+            if errorType == "title":
+                p.bookTitleError.setText(message)
+            elif errorType == "author":
+                p.bookAuthorError.setText(message)
+            elif errorType == "notes":
+                p.bookNotesError.setText(message)
+
+    def clearErrors(self, panelType: str, p):
+        if panelType == "quotes":
+            p.quoteStartError.setText("")
+            p.quoteEndError.setText("")
+            p.quoteAuthorError.setText("")
+            p.quoteBookTitleError.setText("")
+            p.quoteKeywordError.setText("")
+            p.quoteNotesError.setText("")
+            p.quoteError.setText("")
+        elif panelType == "author":
+            p.author_error.setText("")
+            p.notes_error.setText("")
+        elif panelType == "books":
+            p.bookTitleError.setText("")
+            p.bookAuthorError.setText("")
+            p.bookNotesError.setText("")
+
+
+
